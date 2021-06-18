@@ -8,8 +8,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-setwd("C:/Users/t420/Desktop/moje/nauka/DataCamp/Choice Modeling for Marketing in R")
-library(openxlsx)
+
+
+
+wybor<-1
+# 1 praca 2 T420 3 ASUS
+
+setwd(switch(wybor,"Z:/moje/moje/nauka/DataCamp/Choice modelling in marketing with R", "C:/Users/t420/Desktop/moje/nauka/DataCamp/Choice Modeling for Marketing in R",
+      ))
+
 data_long<-read.csv("sportscar_choice/sportscar_choice_long.csv")
 data_wide<-read.csv("sportscar_choice/sportscar_choice_wide.csv")
 
@@ -30,7 +37,7 @@ barplot(xtabs(choice~ trans, data = data_long))
 ```
 ```{r}
 
-install.packages("mlogit")
+
 library(mlogit)
 
 data2<-mlogit.data(data_long, shape="long",id.var = "ques" , alt.var = "alt")
@@ -42,6 +49,168 @@ m1 <- mlogit(choice ~ seat+price+trans+convert, data=data2)
 
 # summarize the m1 object to see the output
 summary(m1)
+
+```
+
+```{r}
+
+# merge(x, y, by=c("",""))
+
+
+
+
+
+
+
+```
+
+
+Chapter 2
+
+
+
+```{r}
+
+
+
+
+data_choc_long<-read.csv(file = "chocolate_choice/chocolate_choice_long.csv")
+data_choc_wide<-read.csv(file = "chocolate_choice/chocolate_choice_wide.csv")
+
+
+subset(data_choc_wide, subset = data_choc_wide$Subject==2408 & data_choc_wide$Trial==3)
+
+
+```
+
+
+```{r}
+
+data_choc_wide_2<-stats::reshape(data_choc_wide, 
+                            direction = "long",
+                            varying=list(brand=3:5,price=6:8, type=9:11),
+                            v.names=c("brand","price","type"),
+                            timevar="alt")
+
+
+new_order<-order(data_choc_wide_2$Subject, data_choc_wide_2$Trial,data_choc_wide_2$alt)
+
+data_choc_wide_2<-data_choc_wide_2[new_order,]
+
+
+
+xtabs(~trans+choice, data_long)
+
+plot(xtabs(~trans+convert+choice+seat+segment, data_long), color="skyblue")
+
+
+```
+
+
+Chapter 3
+
+
+```{r}
+ expand.grid()
+
+
+attributes_choc<-list(type=c("dark","milk","nuts"),
+                      prcie=c(0.5,1,1.5,2),
+                      size=c("small", "medium","large"))
+
+
+
+expand.grid(attributes_choc)
+
+
+
+```
+```{r}
+
+choc<-mlogit.data(data_choc_long,
+                  shape="long",
+                  alt.var = "Alt",
+                  )
+
+model_choc<-mlogit(Selection~Brand+Type+Price, data = choc, print.level=3)
+
+
+summary(model_choc)
+
+
+model_choc_2<-mlogit(Selection~0+Brand+Type+Price, data = choc, print.level=3) # no intercept
+
+summary(model_choc_2)
+
+coef(model_choc)/-coef(model_choc)[11]
+
+
+```
+```{r}
+
+# to test fit of the model likelihood ratio test
+
+mlogit::lrtest(model_choc_2, model_choc)
+
+
+
+```
+```{r}
+
+
+model_choc_3<-mlogit(Selection~0+Brand*Type+Price, data = choc, print.level=3)
+
+summary(model_choc_3)
+
+
+mlogit::lrtest(model_choc_2, model_choc,model_choc_3)
+
+
+
+```
+Chapter 4
+
+```{r}
+
+
+# heterogenity | mixed-model | hierarchical
+
+
+data_choc_long$Subject<-as.factor(data_choc_long$Subject)
+data_choc_long$Brand<-as.factor(data_choc_long$Brand)
+data_choc_long$Type<-as.factor(data_choc_long$Type)
+
+data_choc_long_hier<-mlogit.data(data_choc_long,
+                           choice="Selection",
+                           shape="long",
+                           # varying=c(6,7,8),
+                           alt.var = "Alt",
+                           id.var = "Subject")
+
+
+model_choc_hier<-mlogit(Selection~0+Brand+Type+Price,
+                        data=data_choc_long,
+                        rpar = c(Price="n"),
+                        panel=TRUE)
+
+model_choc_hier_2<-mlogit(Selection~0+Brand+Type+Price,
+                        data=data_choc_long,
+                        rpar = c(Price="n"),
+                        panel=TRUE,
+                        correlation = TRUE)
+                        
+
+plot(model_choc_hier)
+
+
+
+```
+```{r}
+
+contrasts(data_choc_long_hier$Brand) <- contr.sum(levels(data_choc_long_hier$Brand))
+dimnames(contrasts(data_choc_long_hier$Brand))[[2]] <- levels(data_choc_long_hier$Brand)[1:4]
+
+contrasts(data_choc_long_hier$Brand)
 
 ```
 
