@@ -1,0 +1,47 @@
+---
+title: "Choice modelling for Marketing in R"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("C:/Users/t420/Desktop/moje/nauka/DataCamp/Choice Modeling for Marketing in R")
+library(openxlsx)
+data_long<-read.csv("sportscar_choice/sportscar_choice_long.csv")
+data_wide<-read.csv("sportscar_choice/sportscar_choice_wide.csv")
+
+table(data_long$price[data_long$choice==1], dnn = c("price"))
+xtabs(choice~price, data_long)
+
+str(data_long)
+
+tail(data_long)
+```
+```{r}
+
+xtabs(choice~ trans, data = data_long)
+
+barplot(xtabs(choice~ trans, data = data_long))
+
+
+```
+```{r}
+
+install.packages("mlogit")
+library(mlogit)
+
+data2<-mlogit.data(data_long, shape="long",id.var = "ques" , alt.var = "alt")
+
+
+
+# fit a choice model using mlogit() and assign the output to m1
+m1 <- mlogit(choice ~ seat+price+trans+convert, data=data2)
+
+# summarize the m1 object to see the output
+summary(m1)
+
+```
+
